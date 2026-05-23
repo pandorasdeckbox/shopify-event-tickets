@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Tickets</title>
+  <style>
+    :root {
+      --ink: #1b1a16;
+      --muted: #706656;
+      --line: rgba(67, 50, 29, 0.14);
+      --paper: rgba(255, 250, 243, 0.82);
+      --paper-strong: rgba(255, 253, 249, 0.94);
+      --accent: #b24b20;
+      --accent-2: #0d7f6a;
+      --accent-3: #efc26e;
+      --danger: #b42318;
+      --shadow: 0 24px 60px rgba(54, 38, 20, 0.14);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --font-display: Georgia, "Iowan Old Style", serif;
+      --font-body: "Avenir Next", "Segoe UI", sans-serif;
+      --font-mono: "SF Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(178, 75, 32, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(13, 127, 106, 0.14), transparent 24%),
+        linear-gradient(180deg, #f5ecdc 0%, #eee2cf 100%);
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 30px 18px 46px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .panel,
+    .hero-card {
+      background: var(--paper);
+      backdrop-filter: blur(14px);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      bottom: -46px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(239, 194, 110, 0.38), transparent 72%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(178, 75, 32, 0.1);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      line-height: 0.93;
+      letter-spacing: -0.05em;
+      max-width: 9ch;
+    }
+
+    .lede {
+      max-width: 54ch;
+      color: var(--muted);
+      font-size: 1.04rem;
+      line-height: 1.65;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat strong {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hint,
+    .subtle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    input,
+    button,
+    select,
+    a.button {
+      font: inherit;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    a.button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    }
+
+    button:hover,
+    a.button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled,
+    a.button.disabled {
+      opacity: 0.45;
+      cursor: wait;
+      transform: none;
+      pointer-events: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 12px 24px rgba(178, 75, 32, 0.28);
+    }
+
+    .secondary {
+      background: rgba(13, 127, 106, 0.12);
+      color: var(--accent-2);
+    }
+
+    .ghost {
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .message {
+      min-height: 1.5em;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .message.error { color: var(--danger); }
+    .message.success { color: var(--accent-2); }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 10px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .product-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .product-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .product-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: linear-gradient(135deg, rgba(239, 194, 110, 0.44), rgba(178, 75, 32, 0.18));
+      border: 1px solid rgba(67, 50, 29, 0.1);
+    }
+
+    .thumb-placeholder {
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: var(--accent);
+    }
+
+    .product-title {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .product-meta {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .variant-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .variant-button {
+      width: 100%;
+      border: 1px solid rgba(67, 50, 29, 0.1);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 11px 12px;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .variant-button.active {
+      background: rgba(178, 75, 32, 0.1);
+      border-color: rgba(178, 75, 32, 0.36);
+      color: #6d2d10;
+    }
+
+    .variant-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .selection-card {
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--line);
+    }
+
+    .selection-card strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 11px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(29, 36, 51, 0.06);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    .empty {
+      padding: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .content-grid,
+      .field-grid,
+      .search-row,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        padding-inline: 14px;
+      }
+
+      .hero-card,
+      .panel {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Shopify event check-in</div>
+        <h1>Pick the ticket variant and print the sheet directly.</h1>
+        <p class="lede">
+          This app skips the manual Shopify AI export step. Search your Shopify catalog, choose the exact event ticket variant, preview every order tied to it, and open a print-ready check-in sheet that matches the format you already use at the table.
+        </p>
+        <div class="stat-grid">
+          <div class="stat">
+            <span class="stat-label">Shop</span>
+            <strong id="shopDisplay">-</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Orders</span>
+            <strong id="ordersCount">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Tickets</span>
+            <strong id="ticketsCount">0</strong>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel stack">
+        <div>
+          <h2>Sheet setup</h2>
+          <p class="hint">Default title and subtitle come from the selected product and variant, but you can override them before printing.</p>
+        </div>
+
+        <div id="selectionCard" class="selection-card">
+          <strong>No ticket selected</strong>
+          <div class="subtle">Search for a product on the left, then choose the variant that represents this event ticket.</div>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Event title
+            <input id="eventTitleInput" autocomplete="off" placeholder="Secrets of Strixhaven Prerelease">
+          </label>
+          <label>
+            Subtitle / date line
+            <input id="eventSubtitleInput" autocomplete="off" placeholder="Thursday, April 17, 2026 — 6:00 PM">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="previewButton" class="primary">Load ticket buyers</button>
+          <a id="printButton" class="button secondary disabled" href="#" target="_blank" rel="noopener">Open printable sheet</a>
+          <a id="downloadButton" class="button ghost disabled" href="#">Download CSV</a>
+          <a id="reauthButton" class="button ghost" href="#" hidden>Reauthorize app</a>
+        </div>
+
+        <div id="message" class="message"></div>
+      </aside>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel stack">
+        <div>
+          <h2>Ticket search</h2>
+          <p class="hint">Search by product title, variant title, or SKU. Results come straight from Shopify.</p>
+        </div>
+
+        <div class="search-row">
+          <input id="searchInput" autocomplete="off" placeholder="Chaos Rising prerelease, 2HG, Friday 6pm, SKU...">
+          <button id="searchButton" class="ghost">Search catalog</button>
+        </div>
+
+        <div id="results" class="result-list">
+          <div class="empty">Run a product search to load ticket variants.</div>
+        </div>
+      </article>
+
+      <article class="panel stack">
+        <div>
+          <h2>Buyer preview</h2>
+          <p class="hint">Orders are grouped one row per order, sorted by attendee last name, with quantity preserved for multiple tickets.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Order</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <tr><td colspan="4">No data loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const shop = params.get('shop');
+
+    const shopDisplay = document.getElementById('shopDisplay');
+    const ordersCount = document.getElementById('ordersCount');
+    const ticketsCount = document.getElementById('ticketsCount');
+    const selectionCard = document.getElementById('selectionCard');
+    const eventTitleInput = document.getElementById('eventTitleInput');
+    const eventSubtitleInput = document.getElementById('eventSubtitleInput');
+    const previewButton = document.getElementById('previewButton');
+    const printButton = document.getElementById('printButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const reauthButton = document.getElementById('reauthButton');
+    const message = document.getElementById('message');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const results = document.getElementById('results');
+    const previewBody = document.getElementById('previewBody');
+
+    let selectedProduct = null;
+    let selectedVariant = null;
+    let lastReport = null;
+    let savedSelection = {
+      productId: '',
+      variantId: '',
+    };
+
+    shopDisplay.textContent = shop || 'missing';
+    previewButton.disabled = !shop;
+    searchButton.disabled = !shop;
+
+    function setMessage(text, type = '') {
+      message.textContent = text;
+      message.className = `message ${type}`.trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function currentParams() {
+      const query = new URLSearchParams();
+      query.set('shop', shop || '');
+      if (selectedProduct?.legacyResourceId) query.set('productId', selectedProduct.legacyResourceId);
+      if (selectedVariant?.legacyResourceId) query.set('variantId', selectedVariant.legacyResourceId);
+      if (eventTitleInput.value.trim()) query.set('eventTitle', eventTitleInput.value.trim());
+      if (eventSubtitleInput.value.trim()) query.set('eventSubtitle', eventSubtitleInput.value.trim());
+      if (searchInput.value.trim()) query.set('search', searchInput.value.trim());
+      return query;
+    }
+
+    function syncActionLinks() {
+      const hasSelection = Boolean(shop && selectedProduct && selectedVariant);
+      const query = currentParams().toString();
+
+      printButton.href = hasSelection ? `/api/checkin-sheet?${query}` : '#';
+      downloadButton.href = hasSelection ? `/api/export/checkin.csv?${query}` : '#';
+      printButton.classList.toggle('disabled', !hasSelection);
+      downloadButton.classList.toggle('disabled', !hasSelection);
+    }
+
+    function renderSelection() {
+      if (!selectedProduct || !selectedVariant) {
+        selectionCard.innerHTML = '<strong>No ticket selected</strong><div class="subtle">Search for a product on the left, then choose the variant that represents this event ticket.</div>';
+        syncActionLinks();
+        return;
+      }
+
+      selectionCard.innerHTML = `
+        <strong>${escapeHtml(selectedProduct.title)}</strong>
+        <div class="subtle">${escapeHtml(selectedVariant.title || 'Default Title')}</div>
+        <div class="subtle">Variant ID <code>${escapeHtml(String(selectedVariant.legacyResourceId || ''))}</code></div>
+      `;
+
+      if (!eventTitleInput.value.trim()) {
+        eventTitleInput.value = selectedProduct.title || '';
+      }
+
+      if (!eventSubtitleInput.value.trim() && selectedVariant.title && selectedVariant.title !== 'Default Title') {
+        eventSubtitleInput.value = selectedVariant.title;
+      }
+
+      syncActionLinks();
+    }
+
+    function renderResults(products) {
+      if (!products.length) {
+        results.innerHTML = '<div class="empty">No products matched that search.</div>';
+        return;
+      }
+
+      if ((!selectedProduct || !selectedVariant) && savedSelection.productId && savedSelection.variantId) {
+        const matchedProduct = products.find(item => String(item.legacyResourceId) === String(savedSelection.productId));
+        const matchedVariant = matchedProduct?.variants.find(item => String(item.legacyResourceId) === String(savedSelection.variantId));
+
+        if (matchedProduct && matchedVariant) {
+          selectedProduct = matchedProduct;
+          selectedVariant = matchedVariant;
+          renderSelection();
+        }
+      }
+
+      results.innerHTML = products.map(product => {
+        const thumb = product.image
+          ? `<img class="product-thumb" src="${escapeHtml(product.image)}" alt="">`
+          : '<div class="product-thumb thumb-placeholder">T</div>';
+
+        const variants = product.variants.length
+          ? product.variants.map(variant => {
+              const isActive = selectedVariant && String(selectedVariant.id) === String(variant.id);
+              const subtitle = [variant.title && variant.title !== 'Default Title' ? variant.title : '', variant.sku ? `SKU ${variant.sku}` : '']
+                .filter(Boolean)
+                .join(' · ');
+
+              return `
+                <button
+                  class="variant-button ${isActive ? 'active' : ''}"
+                  data-product-id="${escapeHtml(product.id)}"
+                  data-variant-id="${escapeHtml(variant.id)}"
+                  type="button"
+                >
+                  <span>
+                    ${escapeHtml(subtitle || 'Default Title')}
+                  </span>
+                  <span class="variant-meta">${escapeHtml(String(variant.legacyResourceId || ''))}</span>
+                </button>`;
+            }).join('')
+          : '<div class="subtle">No variants found.</div>';
+
+        return `
+          <div class="product-card">
+            <div class="product-header">
+              ${thumb}
+              <div>
+                <div class="product-title">${escapeHtml(product.title)}</div>
+                <div class="product-meta">Product ${escapeHtml(String(product.legacyResourceId || ''))}</div>
+              </div>
+            </div>
+            <div class="variant-list">${variants}</div>
+          </div>`;
+      }).join('');
+
+      for (const button of results.querySelectorAll('.variant-button')) {
+        button.addEventListener('click', () => {
+          const product = products.find(item => String(item.id) === button.dataset.productId);
+          const variant = product?.variants.find(item => String(item.id) === button.dataset.variantId);
+          if (!product || !variant) return;
+
+          selectedProduct = product;
+          selectedVariant = variant;
+          renderSelection();
+          renderResults(products);
+        });
+      }
+    }
+
+    function renderPreview(rows) {
+      if (!rows.length) {
+        previewBody.innerHTML = '<tr><td colspan="4">No paid ticket purchases found for this variant.</td></tr>';
+        return;
+      }
+
+      previewBody.innerHTML = rows.map(row => {
+        const name = `${row.first_name || ''} ${row.last_name || ''}`.trim() || row.email || '(no name)';
+        return `
+          <tr>
+            <td>${escapeHtml(name)}</td>
+            <td>${escapeHtml(String(row.qty || 0))}</td>
+            <td>${escapeHtml(row.order || '')}</td>
+            <td>${escapeHtml(row.email || '')}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    async function loadSettings() {
+      if (!shop) return;
+
+      try {
+        const response = await fetch(`/api/settings?shop=${encodeURIComponent(shop)}`);
+        const data = await response.json();
+        if (!response.ok) return;
+
+        const settings = data.settings || {};
+        if (settings.last_query) searchInput.value = settings.last_query;
+        if (settings.event_title) eventTitleInput.value = settings.event_title;
+        if (settings.event_subtitle) eventSubtitleInput.value = settings.event_subtitle;
+        savedSelection = {
+          productId: settings.selected_product_id || '',
+          variantId: settings.selected_variant_id || '',
+        };
+      } catch (_error) {
+      }
+    }
+
+    async function persistSettings() {
+      if (!shop) return;
+
+      try {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shop,
+            settings: {
+              last_query: searchInput.value.trim(),
+              selected_product_id: selectedProduct?.legacyResourceId || '',
+              selected_variant_id: selectedVariant?.legacyResourceId || '',
+              event_title: eventTitleInput.value.trim(),
+              event_subtitle: eventSubtitleInput.value.trim(),
+            },
+          }),
+        });
+      } catch (_error) {
+      }
+    }
+
+    async function searchCatalog() {
+      if (!shop) {
+        setMessage('Missing shop parameter. Open the app from Shopify admin or add ?shop=your-store.myshopify.com to the URL.', 'error');
+        return;
+      }
+
+      searchButton.disabled = true;
+      setMessage('Searching Shopify products...');
+      reauthButton.hidden = true;
+
+      try {
+        const query = new URLSearchParams({ shop, query: searchInput.value.trim() });
+        const response = await fetch(`/api/products?${query.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.needsReauth && data.authUrl) {
+            reauthButton.hidden = false;
+            reauthButton.href = data.authUrl;
+          }
+          throw new Error(data.error || 'Catalog search failed');
+        }
+
+        renderResults(data.products || []);
+        setMessage(`Loaded ${(data.products || []).length} matching products.`, 'success');
+        syncActionLinks();
+        persistSettings();
+      } catch (error) {
+        results.innerHTML = '<div class="empty">No products loaded.</div>';
+        setMessage(error.message, 'error');
+      } finally {
+        searchButton.disabled = false;
+      }
+    }
+
+    async function loadPreview() {
+      if (!shop) {
+        setMessage('Missing shop parameter. Open the app from Shopify admin or add ?shop=your-store.myshopify.com to the URL.', 'error');
+        return;
+      }
+
+      if (!selectedProduct || !selectedVariant) {
+        setMessage('Choose the ticket product and variant first.', 'error');
+        return;
+      }
+
+      previewButton.disabled = true;
+      setMessage('Scanning matching orders through Shopify Admin API...');
+      reauthButton.hidden = true;
+
+      try {
+        const response = await fetch(`/api/report?${currentParams().toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.needsReauth && data.authUrl) {
+            reauthButton.hidden = false;
+            reauthButton.href = data.authUrl;
+          }
+          throw new Error(data.error || 'Preview failed');
+        }
+
+        lastReport = data;
+        ordersCount.textContent = String(data.totalOrders || 0);
+        ticketsCount.textContent = String(data.totalTickets || 0);
+
+        if (!eventTitleInput.value.trim() && data.eventTitle) {
+          eventTitleInput.value = data.eventTitle;
+        }
+        if (!eventSubtitleInput.value.trim() && data.eventSubtitle) {
+          eventSubtitleInput.value = data.eventSubtitle;
+        }
+
+        renderPreview(data.rows || []);
+        syncActionLinks();
+        setMessage(`Loaded ${data.totalOrders || 0} orders and ${data.totalTickets || 0} tickets.`, 'success');
+        persistSettings();
+      } catch (error) {
+        lastReport = null;
+        ordersCount.textContent = '0';
+        ticketsCount.textContent = '0';
+        renderPreview([]);
+        setMessage(error.message, 'error');
+      } finally {
+        previewButton.disabled = false;
+      }
+    }
+
+    searchButton.addEventListener('click', searchCatalog);
+    previewButton.addEventListener('click', loadPreview);
+    searchInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        searchCatalog();
+      }
+    });
+
+    eventTitleInput.addEventListener('input', syncActionLinks);
+    eventSubtitleInput.addEventListener('input', syncActionLinks);
+
+    loadSettings().then(() => {
+      syncActionLinks();
+      if (shop) {
+        searchCatalog();
+      }
+    });
+  </script>
+</body>
+</html>
