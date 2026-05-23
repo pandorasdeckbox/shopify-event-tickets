@@ -22,6 +22,14 @@ if (missing.length) {
   process.exit(1);
 }
 
+let appOrigin;
+try {
+  appOrigin = new URL(process.env.APP_URL).origin;
+} catch {
+  console.error('APP_URL must be a valid absolute URL, for example https://event-tools.pandorasdeckbox.com');
+  process.exit(1);
+}
+
 await initDatabase();
 
 const app = express();
@@ -32,8 +40,8 @@ const oauthStateStorage = new Map();
 const shopify = shopifyApi({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  scopes: ['read_products', 'read_all_orders'],
-  hostName: process.env.APP_URL.replace(/^https?:\/\//, ''),
+  scopes: ['read_products', 'read_orders'],
+  hostName: appOrigin.replace(/^https?:\/\//, ''),
   hostScheme: 'https',
   apiVersion: ApiVersion.January25,
   isEmbeddedApp: true,
@@ -111,8 +119,8 @@ app.get('/auth', async (req, res) => {
 
     const authUrl = `https://${sanitizedShop}/admin/oauth/authorize?` + new URLSearchParams({
       client_id: process.env.SHOPIFY_API_KEY,
-      scope: 'read_products,read_all_orders',
-      redirect_uri: `${process.env.APP_URL}/auth/callback`,
+      scope: 'read_products,read_orders',
+      redirect_uri: `${appOrigin}/auth/callback`,
       state,
     }).toString();
 
@@ -251,7 +259,7 @@ app.use((error, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Shopify event tickets listening on port ${PORT}`);
-  console.log(`Open ${process.env.APP_URL}/auth?shop=your-store.myshopify.com to install`);
+  console.log(`Open ${appOrigin}/auth?shop=your-store.myshopify.com to install`);
 });
 
 function renderTopRedirect(url) {

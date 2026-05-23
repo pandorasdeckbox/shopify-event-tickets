@@ -43,7 +43,7 @@ Create a Shopify app and configure:
 2. Allowed redirection URL: `https://your-domain.com/auth/callback`
 3. Admin API scopes:
    - `read_products`
-   - `read_all_orders`
+   - `read_orders`
 
 ## Railway Setup
 
@@ -56,7 +56,7 @@ Create a Shopify app and configure:
 |----------|-------|
 | `SHOPIFY_API_KEY` | Shopify app API key |
 | `SHOPIFY_API_SECRET` | Shopify app API secret |
-| `APP_URL` | Public app URL, no trailing slash |
+| `APP_URL` | Public app origin only, for example `https://event-tools.pandorasdeckbox.com` |
 | `DATABASE_URL` | Railway Postgres URL, optional for local-only SQLite |
 | `NODE_ENV` | `production` |
 
@@ -106,5 +106,7 @@ https://your-app-url/auth?shop=your-store.myshopify.com
 ## Notes
 
 - The app currently treats cancelled, refunded, and voided orders as excluded from the check-in list.
+- `read_orders` is enough for the app to function, but Shopify may limit how far back the app can read orders unless broader historical order access is granted on the store.
 - Product search uses Shopify Admin search syntax. Simple title keywords usually work well.
 - The printable sheet opens in a separate tab so it can be printed cleanly from the browser.
+- Shopify App URL should include `/app`, but `APP_URL` in Railway should be just the origin, without `/app`.
