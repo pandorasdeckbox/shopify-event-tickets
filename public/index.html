@@ -585,12 +585,19 @@
       downloadButton.classList.toggle('disabled', !hasSelection);
     }
 
-    function renderSelection() {
+    function renderSelection(options = {}) {
+      const { resetEventFields = false } = options;
+
       if (!selectedProduct || !selectedVariant) {
         selectionCard.innerHTML = '<strong>No ticket selected</strong><div class="subtle">Search for a product on the left, then choose the variant that represents this event ticket.</div>';
         syncActionLinks();
         return;
       }
+
+      const defaultTitle = selectedProduct.title || '';
+      const defaultSubtitle = selectedVariant.title && selectedVariant.title !== 'Default Title'
+        ? selectedVariant.title
+        : '';
 
       selectionCard.innerHTML = `
         <strong>${escapeHtml(selectedProduct.title)}</strong>
@@ -598,12 +605,12 @@
         <div class="subtle">Variant ID <code>${escapeHtml(String(selectedVariant.legacyResourceId || ''))}</code></div>
       `;
 
-      if (!eventTitleInput.value.trim()) {
-        eventTitleInput.value = selectedProduct.title || '';
+      if (resetEventFields || !eventTitleInput.value.trim()) {
+        eventTitleInput.value = defaultTitle;
       }
 
-      if (!eventSubtitleInput.value.trim() && selectedVariant.title && selectedVariant.title !== 'Default Title') {
-        eventSubtitleInput.value = selectedVariant.title;
+      if (resetEventFields || !eventSubtitleInput.value.trim()) {
+        eventSubtitleInput.value = defaultSubtitle;
       }
 
       syncActionLinks();
@@ -674,7 +681,7 @@
 
           selectedProduct = product;
           selectedVariant = variant;
-          renderSelection();
+          renderSelection({ resetEventFields: true });
           renderResults(products);
         });
       }
