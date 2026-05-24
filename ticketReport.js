@@ -404,8 +404,8 @@ export function toCsv(rows) {
 
 function buildProductSearchQuery(searchText) {
   const value = String(searchText || '').trim();
-  if (!value) return 'status:active AND product_type:EVENT';
-  return `status:active AND ${value}`;
+  if (!value) return 'product_type:EVENT';
+  return value;
 }
 
 async function runGraphql(session, query, variables) {
