@@ -9,7 +9,7 @@ const INCLUDED_FINANCIAL_STATUSES = new Set([
 
 export async function searchProducts(session, searchText = '') {
   const query = `query ProductSearch($query: String!) {
-    products(first: 25, query: $query, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 25, query: $query, sortKey: CREATED_AT, reverse: true) {
       nodes {
         id
         title
